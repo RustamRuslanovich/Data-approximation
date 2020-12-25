@@ -1,0 +1,3 @@
+[console_scripts]
+fitting_master = jetproj.fitting_master:main
+

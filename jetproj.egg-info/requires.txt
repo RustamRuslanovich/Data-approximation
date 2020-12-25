@@ -1,0 +1,5 @@
+numpy>=1.13
+scipy>=1.0
+matplotlib>=2.0
+emcee>=3.0
+astropy

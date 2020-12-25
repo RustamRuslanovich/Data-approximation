@@ -1,0 +1,25 @@
+Metadata-Version: 2.1
+Name: jetproj
+Version: 1.0
+Summary: Simulation of jet and fitting data
+Home-page: 'without'
+Author: Rustam Ishmukhametov
+Author-email: 'maminastronom@gmail.ru'
+License: MIT
+Keywords: science,astrophysics
+Platform: UNKNOWN
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Education
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Topic :: Education
+Classifier: Topic :: Scientific/Engineering :: Astronomy
+Classifier: Programming Language :: Python :: 3
+Requires-Dist: numpy (>=1.13)
+Requires-Dist: scipy (>=1.0)
+Requires-Dist: matplotlib (>=2.0)
+Requires-Dist: emcee (>=3.0)
+Requires-Dist: astropy
+
+UNKNOWN
+
+
