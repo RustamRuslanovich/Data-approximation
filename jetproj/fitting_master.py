@@ -14,10 +14,9 @@ def open_files(path='../../'):
              'position1':'position of core for2', 'position2':'position of core for8'}
 
     for key in files:
-        with open(path + globals()[files[key]] + '.txt') as fr:
-            global globals()[files[key]]
-            globals()[files[key]] = np.array(fr.readlines())
-
+        global globals()[files[key]]
+        np.loadtxt(path + globals()[files[key]] + '.txt')
+        
     global crsh
     crsh = position1 - position2
     global inaccuracy_crshf
@@ -71,7 +70,7 @@ def log_prior(theta):
 
 def log_probability(theta, fl1, fl2, crsh, inaccuracy_crshf):
     """Combining log_prior with the definition of log_likelihood from above.
-     Returns full log-probability function is:"""
+     Returns full log-probability function"""
     lp = log_prior(theta)
     if not np.isfinite(lp):
         return -np.inf
