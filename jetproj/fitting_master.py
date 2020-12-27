@@ -3,6 +3,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import emcee
+import json
 from scipy.optimize import minimize
 
 
@@ -10,13 +11,25 @@ def open_files(path='../../'):
     '''Opening files of jet's model.
     Returning fluxes, epoches, coreshift
     path - write your directory'''
-    files = {'fl1':'flux for2', 'fl2':'flux for8', 'time2':'time2', 'time8':'time8',
-             'position1':'position of core for2', 'position2':'position of core for8'}
-
-    for key in files:
-        global globals()[files[key]]
-        np.loadtxt(path + globals()[files[key]] + '.txt')
-        
+    with open(path + 'flux for2.txt') as fr:
+        global fl1
+        fl1 = np.array(json.load(fr))
+    with open(path + 'flux for8.txt') as fr:
+        global fl2
+        fl2 = np.array(json.load(fr))
+    with open(path + 'time2.txt') as fr:
+        global time2
+        time2 = np.array(json.load(fr))
+    with open(path + 'time8.txt') as fr:
+        global time8
+        time8 = np.array(json.load(fr))
+    with open(path + 'position of core for2.txt') as fr:
+        global position1
+        position1 = np.array(json.load(fr))
+    with open(path + 'position of core for8.txt') as fr:
+        global position2
+        position2 = np.array(json.load(fr))
+            
     global crsh
     crsh = position1 - position2
     global inaccuracy_crshf
@@ -84,7 +97,7 @@ def final_fitting():
     nwalkers, ndim = pos.shape
 
     sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, args=(fl1, fl2, crsh, inaccuracy_crshf))
-    sampler.run_mcmc(pos, 5000, progress=True)
+    sampler.run_mcmc(pos, 10000, progress=True)
     tau = sampler.get_autocorr_time()
     print(tau)
     return tau
@@ -95,3 +108,5 @@ def main():
     
 if __name__ == '__main__':
     main()
+
+    
