@@ -2,7 +2,6 @@
 # coding: utf-8
 import matplotlib.pyplot as plt
 import numpy as np
-import json
 import emcee
 from scipy.optimize import minimize
 
@@ -11,24 +10,13 @@ def open_files(path='../../'):
     '''Opening files of jet's model.
     Returning fluxes, epoches, coreshift
     path - write your directory'''
-    with open(path + 'flux for2.txt') as fr:
-        global fl1
-        fl1 = np.array(json.load(fr))
-    with open(path + 'flux for8.txt') as fr:
-        global fl2
-        fl2 = np.array(json.load(fr))
-    with open(path + 'time2.txt') as fr:
-        global time2
-        time2 = np.array(json.load(fr))
-    with open(path + 'time8.txt') as fr:
-        global time8
-        time8 = np.array(json.load(fr))
-    with open(path + 'position of core for2.txt') as fr:
-        global position1
-        position1 = np.array(json.load(fr))
-    with open(path + 'position of core for8.txt') as fr:
-        global position2
-        position2 = np.array(json.load(fr))
+    files = {'fl1':'flux for2', 'fl2':'flux for8', 'time2':'time2', 'time8':'time8',
+             'position1':'position of core for2', 'position2':'position of core for8'}
+
+    for key in files:
+        with open(path + globals()[files[key]] + '.txt') as fr:
+            global globals()[files[key]]
+            globals()[files[key]] = np.array(fr.readlines())
 
     global crsh
     crsh = position1 - position2
