@@ -7,7 +7,7 @@ import emcee
 from scipy.optimize import minimize
 
 
-def open_files(path='/home/rustam/Desktop/newnew/'):
+def open_files(path='../../'):
     '''Opening files of jet's model.
     Returning fluxes, epoches, coreshift
     path - write your directory'''
@@ -37,7 +37,7 @@ def open_files(path='/home/rustam/Desktop/newnew/'):
     return crsh, inaccuracy_crshf, fl1, fl2, time2, time8
 
 
-def log_likelihood(theta, path='/home/rustam/Desktop/newnew/'):
+def log_likelihood(theta, path='../../'):
     """Returning logarithm of likelihood function
     path - path to your model data"""
     open_files(path=path)
