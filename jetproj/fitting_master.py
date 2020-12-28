@@ -95,7 +95,7 @@ def final_fitting():
     mle()
     pos = soln.x + 1e-4 * np.random.randn(32, 4)
     nwalkers, ndim = pos.shape
-
+    print(soln)
     sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, args=(fl1, fl2, crsh, inaccuracy_crshf))
     sampler.run_mcmc(pos, 10000, progress=True)
     tau = sampler.get_autocorr_time()
