@@ -9,37 +9,37 @@ from scipy.optimize import minimize
 from warnings import warn
 
 
-def open_fl1(path='../../'):
+def open_fl1(path):
     with open(os.path.join(path, 'flux for2.txt')) as fr:
         fl1 = np.array(json.load(fr))
     return fl1
 
 
-def open_fl2(path='../../'):
+def open_fl2(path):
     with open(os.path.join(path, 'flux for8.txt')) as fr:
         fl2 = np.array(json.load(fr))
     return fl2
 
 
-def open_time2(path='../../'):
+def open_time2(path):
     with open(os.path.join(path, 'time2.txt')) as fr:
         time2 = np.array(json.load(fr))
     return time2
 
 
-def open_time8(path='../../'):
+def open_time8(path):
     with open(os.path.join(path, 'time8.txt')) as fr:
         time8 = np.array(json.load(fr))
     return time8
 
 
-def open_position1(path='../../'):
+def open_position1(path):
     with open(os.path.join(path, 'position of core for2.txt')) as fr:
         position1 = np.array(json.load(fr))
     return position1
 
 
-def open_position2(path='../../'):
+def open_position2(path):
     with open(os.path.join(path, 'position of core for8.txt')) as fr:
         position2 = np.array(json.load(fr))
     return position2
@@ -75,7 +75,7 @@ def mle(a_true=0, b1_true=1, b2_true=1, k_true=0.28, first_freq='2', second_freq
 
 
 def plotting(path='../../'):
-    a_ml, b1_ml, b2_ml, k_ml = mle().x
+    a_ml, b1_ml, b2_ml, k_ml = mle(path=path).x
     print("Maximum likelihood estimates:")
     print("a = {0:.3f}".format(a_ml))
     print("b1 = {0:.3f}".format(b1_ml))
@@ -97,7 +97,7 @@ def plotting(path='../../'):
         plt.show()
 
 
-def log_prior(theta):
+def log_prior(theta, path='../../'):
     """This function encodes any previous knowledge that we have
      about the parameters: results from other experiments,
       physically acceptable ranges, etc."""
@@ -110,14 +110,14 @@ def log_prior(theta):
 def log_probability(theta, fl1, fl2, crsh, inaccuracy_crshf, path='../../'):
     """Combining log_prior with the definition of log_likelihood from above.
      Returns full log-probability function"""
-    lp = log_prior(theta)
+    lp = log_prior(theta, path=path)
     fl1 = open_fl1(path=path)
     fl2 = open_fl2(path=path)
     position1 = open_position1(path=path)
     position2 = open_position2(path=path)
     crsh = position1 - position2
     inaccuracy_crshf = crsh * 0.1
-    return lp + log_likelihood(theta)
+    return lp + log_likelihood(theta, path=path)
 
 
 def final_fitting(path='../../'):
