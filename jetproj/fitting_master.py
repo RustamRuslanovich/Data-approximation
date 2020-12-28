@@ -1,58 +1,73 @@
 #!/usr/bin/env python
 # coding: utf-8
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import emcee
 import json
 from scipy.optimize import minimize
+from warnings import warn
 
 
-def open_files(path='../../'):
-    '''Opening files of jet's model.
-    Returning fluxes, epoches, coreshift
-    path - write your directory'''
-    with open(path + 'flux for2.txt') as fr:
-        global fl1
+def open_fl1(path='../../'):
+    with open(os.path.join(path, 'flux for2.txt')) as fr:
         fl1 = np.array(json.load(fr))
-    with open(path + 'flux for8.txt') as fr:
-        global fl2
+    return fl1
+
+
+def open_fl2(path='../../'):
+    with open(os.path.join(path, 'flux for8.txt')) as fr:
         fl2 = np.array(json.load(fr))
-    with open(path + 'time2.txt') as fr:
-        global time2
+    return fl2
+
+
+def open_time2(path='../../'):
+    with open(os.path.join(path, 'time2.txt')) as fr:
         time2 = np.array(json.load(fr))
-    with open(path + 'time8.txt') as fr:
-        global time8
+    return time2
+
+
+def open_time8(path='../../'):
+    with open(os.path.join(path, 'time8.txt')) as fr:
         time8 = np.array(json.load(fr))
-    with open(path + 'position of core for2.txt') as fr:
-        global position1
+    return time8
+
+
+def open_position1(path='../../'):
+    with open(os.path.join(path, 'position of core for2.txt')) as fr:
         position1 = np.array(json.load(fr))
-    with open(path + 'position of core for8.txt') as fr:
-        global position2
+    return position1
+
+
+def open_position2(path='../../'):
+    with open(os.path.join(path, 'position of core for8.txt')) as fr:
         position2 = np.array(json.load(fr))
-            
-    global crsh
-    crsh = position1 - position2
-    global inaccuracy_crshf
-    inaccuracy_crshf = crsh*0.1
-    return crsh, inaccuracy_crshf, fl1, fl2, time2, time8
+    return position2
 
 
 def log_likelihood(theta, path='../../'):
     """Returning logarithm of likelihood function
     path - path to your model data"""
-    open_files(path=path)
+    #files = ['fl1', 'fl2', 'position1', 'position2', 'time2', 'time8']
     a, b1, b2, k = theta
+    fl1 = open_fl1(path=path)
+    fl2 = open_fl2(path=path)
+    position1 = open_position1(path=path)
+    position2 = open_position2(path=path)
+    crsh = position1 - position2
+    inaccuracy_crshf = crsh * 0.1
+
     model = a + b1*fl1**k + b2*fl2**k
-    sigma2 = inaccuracy_crshf**2
+    sigma2 = (inaccuracy_crshf)**2
     return -0.5 * np.sum((crsh - model) ** 2 / sigma2 + np.log(sigma2))
 
 
-def mle(a_true=0, b1_true=1, b2_true=1, k_true=0.28, first_freq='2', second_freq='8'):
+def mle(a_true=0, b1_true=1, b2_true=1, k_true=0.28, first_freq='2', second_freq='8', path='../../'):
     """Finding numerical optimum of likelihood function"""
     np.random.seed(42)
     nll = lambda *args: -log_likelihood(*args)
     initial = np.array([a_true, b1_true, b2_true, k_true]) + 0.1 * np.random.randn(4)
-    global soln
+    #global soln
     soln = minimize(nll, initial)
     a_ml, b1_ml, b2_ml, k_ml = soln.x
     print("Maximum likelihood estimates:")
@@ -60,6 +75,12 @@ def mle(a_true=0, b1_true=1, b2_true=1, k_true=0.28, first_freq='2', second_freq
     print("b1 = {0:.3f}".format(b1_ml))
     print("b2 = {0:.3f}".format(b2_ml))
     print("k = {0:.3f}".format(k_ml))
+    fl1 = open_fl1(path=path)
+    fl2 = open_fl2(path=path)
+    position1 = open_position1(path=path)
+    position2 = open_position2(path=path)
+    crsh = position1 - position2
+    inaccuracy_crshf = crsh * 0.1
     freqs = {'8': fl2, '2': fl1}
     for key in freqs:
         plt.errorbar(freqs[key], crsh, yerr=inaccuracy_crshf, fmt=".k", capsize=0)
@@ -68,6 +89,9 @@ def mle(a_true=0, b1_true=1, b2_true=1, k_true=0.28, first_freq='2', second_freq
         plt.xlabel('flux for '+str(key) + 'GHz')
         plt.ylabel('coreshift')
         plt.show()
+
+    if soln.success == False:
+        warn('Отимизация не удалась :(')
     return soln
 
 
@@ -81,26 +105,37 @@ def log_prior(theta):
     return -np.inf
 
 
-def log_probability(theta, fl1, fl2, crsh, inaccuracy_crshf):
+def log_probability(theta, fl1, fl2, crsh, inaccuracy_crshf, path='../../'):
     """Combining log_prior with the definition of log_likelihood from above.
      Returns full log-probability function"""
     lp = log_prior(theta)
-    if not np.isfinite(lp):
-        return -np.inf
-    return lp + log_likelihood(theta, fl1, fl2, crsh, inaccuracy_crshf)
+    fl1 = open_fl1(path=path)
+    fl2 = open_fl2(path=path)
+    position1 = open_position1(path=path)
+    position2 = open_position2(path=path)
+    crsh = position1 - position2
+    inaccuracy_crshf = crsh * 0.1
+    return lp + log_likelihood(theta)
 
 
-def final_fitting():
+def final_fitting(path='../../'):
     """Makes all procedures and fits data"""
-    mle()
-    pos = soln.x + 1e-4 * np.random.randn(32, 4)
+    #mle()
+    fl1 = open_fl1(path=path)
+    fl2 = open_fl2(path=path)
+    position1 = open_position1(path=path)
+    position2 = open_position2(path=path)
+    crsh = position1 - position2
+    inaccuracy_crshf = crsh * 0.1
+    pos = mle().x + 1e-4 * np.random.randn(32, 4)
     nwalkers, ndim = pos.shape
-    print(soln)
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, args=(fl1, fl2, crsh, inaccuracy_crshf))
-    sampler.run_mcmc(pos, 10000, progress=True)
+    #print(mle())
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, args=(fl1, fl2, crsh, inaccuracy_crshf, path))
+    sampler.run_mcmc(pos, 500, progress=True)
     tau = sampler.get_autocorr_time()
     print(tau)
     return tau
+
 
 def main():
     final_fitting()
@@ -109,4 +144,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-    
