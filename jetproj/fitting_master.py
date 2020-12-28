@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-import os
+import sys, os
 import matplotlib.pyplot as plt
 import numpy as np
 import emcee
@@ -65,11 +65,17 @@ def log_likelihood(theta, path='../../'):
 def mle(a_true=0, b1_true=1, b2_true=1, k_true=0.28, first_freq='2', second_freq='8', path='../../'):
     """Finding numerical optimum of likelihood function"""
     np.random.seed(42)
-    nll = lambda *args: -log_likelihood(*args)
+    nll = lambda *args: -log_likelihood(*args, path=path)
     initial = np.array([a_true, b1_true, b2_true, k_true]) + 0.1 * np.random.randn(4)
-    #global soln
     soln = minimize(nll, initial)
-    a_ml, b1_ml, b2_ml, k_ml = soln.x
+
+    if not soln.success:
+        warn('Отимизация не удалась :(')
+    return soln
+
+
+def plotting(path='../../'):
+    a_ml, b1_ml, b2_ml, k_ml = mle().x
     print("Maximum likelihood estimates:")
     print("a = {0:.3f}".format(a_ml))
     print("b1 = {0:.3f}".format(b1_ml))
@@ -86,13 +92,9 @@ def mle(a_true=0, b1_true=1, b2_true=1, k_true=0.28, first_freq='2', second_freq
         plt.errorbar(freqs[key], crsh, yerr=inaccuracy_crshf, fmt=".k", capsize=0)
         plt.plot(freqs[key], a_ml + b1_ml*fl1**k_ml + b2_ml*fl2**k_ml, ":k", label="ML")
         plt.legend(fontsize=14)
-        plt.xlabel('flux for '+str(key) + 'GHz')
+        plt.xlabel(f'flux for {key} GHz')
         plt.ylabel('coreshift')
         plt.show()
-
-    if soln.success == False:
-        warn('Отимизация не удалась :(')
-    return soln
 
 
 def log_prior(theta):
@@ -127,7 +129,7 @@ def final_fitting(path='../../'):
     position2 = open_position2(path=path)
     crsh = position1 - position2
     inaccuracy_crshf = crsh * 0.1
-    pos = mle().x + 1e-4 * np.random.randn(32, 4)
+    pos = mle(path=path).x + 1e-4 * np.random.randn(32, 4)
     nwalkers, ndim = pos.shape
     #print(mle())
     sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, args=(fl1, fl2, crsh, inaccuracy_crshf, path))
@@ -138,8 +140,9 @@ def final_fitting(path='../../'):
 
 
 def main():
-    final_fitting()
-    
+    path = sys.argv[1]
+    final_fitting(path=path)
+    plotting(path=path)
     
 if __name__ == '__main__':
     main()
